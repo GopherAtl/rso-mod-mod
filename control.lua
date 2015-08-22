@@ -1479,7 +1479,7 @@ local function init()
     else
       --distribute in a circle around 0,0
       local rgen = rng_for_reg_pos({x=0,y=0})
-      local offset_distance=starting_area_size*REGION_TILE_SIZE
+      local offset_distance=starting_area_size*REGION_TILE_SIZE*starting_area_separation
       local angle_step=pi*2/num_starting_areas
       local angle=rgen:random()*angle_step
       for i=1,num_starting_areas do

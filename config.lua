@@ -7,7 +7,7 @@ region_size = 7 -- alternative mean to control how further away resources would 
                 -- each region is region_size*region_size chunks
                 -- each chunk is 32*32 tiles
 starting_area_forces={"red","blue","green","yellow"} --default, regular player force gets a starting area
-
+starting_area_separation=5 --in multiples of starting_area_size
 
 override_normal_spawn = true    -- if false then the standard spawner can also spawn full grown resources/entities,
                                 -- set resources you want to control through this config to "None" in worldgen "Size" settings when starting a new game
