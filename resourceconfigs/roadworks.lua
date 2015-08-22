@@ -4,14 +4,14 @@ function fillRoadworksConfig()
 		type="resource-ore",
 		
 		allotment=40,
-		spawns_per_region={min=1, max=3},
-		richness=11000,
-		size={min=10, max=18},
+		spawns_per_region={min=1, max=1},
+		richness=13000,
+		size={min=10, max=20},
 		min_amount = 100,
 		
 		starting={richness=2000, size=10, probability=0.9},
 		
-		multi_resource_chance=0.50,
+		multi_resource_chance=0.30,
 		multi_resource={
 			["coal"] = 2,
 			["stone"] = 4,

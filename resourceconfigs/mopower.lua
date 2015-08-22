@@ -4,12 +4,12 @@ function fillMopowerConfig()
 		type="resource-ore",
 		
 		allotment=30,
-		spawns_per_region={min=1, max=3},
-		richness=2500,
-		size={min=10, max=14},
+		spawns_per_region={min=1, max=1},
+		richness=4000,
+		size={min=10, max=16},
 		min_amount = 125,
 		
-		multi_resource_chance=0.50,
+		multi_resource_chance=0.30,
 		multi_resource={
 			["copper-ore"] = 3,
 			["iron-ore"] = 3,

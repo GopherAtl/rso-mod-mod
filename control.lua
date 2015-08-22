@@ -21,6 +21,9 @@ local sin = math.sin
 local pi = math.pi
 local max = math.max
 
+local function round(value)
+	return math.floor(value + 0.5)
+end
 
 local function debug(str)
 	if debug_enabled then
@@ -53,6 +56,65 @@ local spawner_probability_edge = 0  -- below this value a biter spawner, above/e
 local invalidResources = {}
 local config = nil
 local configIndexed = nil
+
+-- map gen settings mapping
+
+local startingAreaMultiplier =
+{
+	none = 0,
+	["very-small"] = 0.25,
+	small = 0.5,
+	medium = 1,
+	big = 1.5,
+	["very-big"] = 2,
+}
+
+local frequencyAllotmentMultiplier =
+{
+	["very-low"] = 0.5,
+	low = 0.75,
+	normal = 1,
+	high = 1.5,
+	["very-high"] = 2,
+}
+
+local sizeMultiplier =
+{
+	none = 0,
+	["very-small"] = 0.5,
+	small = 0.75,
+	medium = 1,
+	big = 1.25,
+	["very-big"] = 1.5,
+}
+
+local richnessMultiplier =
+{
+	["very-poor"] = 0.125,
+	poor = 0.25,
+	regular = 1,
+	good = 2,
+	["very-good"] = 4,
+}
+
+local entityFrequencyMultiplier =
+{
+	["very-low"] = 0.25,
+	low = 0.5,
+	normal = 1,
+	high = 2,
+	["very-high"] = 4,
+}
+
+local entitySizeMultiplier =
+{
+	none = 0,
+	["very-small"] = 0.5,
+	small = 0.75,
+	medium = 1,
+	big = 2,
+	["very-big"] = 4,
+}
 
 --[[ HELPER METHODS ]]--
 
@@ -264,22 +326,24 @@ local function spawn_resource_ore(surface, rname, pos, size, richness, startingA
 	local n_balls={}
 	local MIN_BALL_DISTANCE = math.min(MIN_BALL_DISTANCE, radius/2)
 	
+	local maxPradius = 0	
 	local outside = { xmin = 1e10, xmax = -1e10, ymin = 1e10, ymax = -1e10 }
 	local inside = { xmin = 1e10, xmax = -1e10, ymin = 1e10, ymax = -1e10 }
 	
 	local function adjustRadius(radius, scaleX, scaleY, up)
-		if scaleX < 1 then
-			scaleX = 1
-		end
-		if scaleY < 1 then
-			scaleY = 1
-		end
+--		if scaleX < 1 then
+--			scaleX = 1
+--		end
+--		if scaleY < 1 then
+--			scaleY = 1
+--		end
 
-		if up then
-			return radius * math.max(scaleX, scaleY)
-		else
-			return radius / math.max(scaleX, scaleY)
-		end
+--		if up then
+--			return radius * math.max(scaleX, scaleY)
+--		else
+--			return radius / math.max(scaleX, scaleY)
+--		end
+		return radius
 	end
 	
 	local function updateRect(rect, x, y, radius)
@@ -299,7 +363,7 @@ local function spawn_resource_ore(surface, rname, pos, size, richness, startingA
 	local function generate_p_ball()
 		local angle, x_scale, y_scale, x, y, b_radius, shape
 		angle, x_scale, y_scale=rng_restricted_angle(restrictions)
-		local dev = rgen:random(radius/8, radius/2)--math.min(CHUNK_SIZE/3, radius*1.5)
+		local dev = radius/2 + rgen:random() * radius/4--math.min(CHUNK_SIZE/3, radius*1.5)
 		local dev_x, dev_y = pos.x, pos.y
 		x = rgen:random(-dev, dev)+dev_x
 		y = rgen:random(-dev, dev)+dev_y
@@ -311,13 +375,18 @@ local function spawn_resource_ore(surface, rname, pos, size, richness, startingA
 			debug("Move ball new xy @ "..x..","..y)
 		end
 		
-		b_radius = (radius / 2 + rgen:random()* radius / 4) -- * (P_BALL_SIZE_FACTOR^#p_balls)
+		if #p_balls == 0 then
+			b_radius = ( 3 * radius / 4 + rgen:random() * radius / 4) -- * (P_BALL_SIZE_FACTOR^#p_balls)
+		else
+			b_radius = ( radius / 4 + rgen:random() * radius / 2) -- * (P_BALL_SIZE_FACTOR^#p_balls)
+		end
+		
 		
 		if #p_balls > 0 then
 			local tempRect = table.deepcopy(inside)
 			updateRect(tempRect, x, y, adjustRadius(b_radius, x_scale, y_scale))
 			local rectSize = math.max(tempRect.xmax - tempRect.xmin, tempRect.ymax - tempRect.ymin)
-			local targetSize = size
+			local targetSize = size * 1.25
 			debug("Rect size "..rectSize.." targetSize "..targetSize)
 			if rectSize > targetSize then
 				local widthLeft = (targetSize - (inside.xmax - inside.xmin))
@@ -331,7 +400,13 @@ local function spawn_resource_ore(surface, rname, pos, size, richness, startingA
 			end
 		end
 
-		if b_radius > 2 then
+		if b_radius < 2 and #p_balls == 0 then
+			b_radius = 2
+		end
+		
+		if b_radius > 0 then
+			
+			maxPradius = math.max(maxPradius, b_radius)
 			shape = meta_shapes[rgen:random(1,#meta_shapes)]
 			local radiusText = ""
 			if shape.type == "MetaDonut" then
@@ -342,10 +417,8 @@ local function spawn_resource_ore(surface, rname, pos, size, richness, startingA
 				p_balls[#p_balls+1] = shape:new(x, y, b_radius, angle, x_scale, y_scale, 1.1)
 			end
 			updateRects(x, y, b_radius, x_scale, y_scale)
-			
+		
 			debug("P+Ball "..shape.type.." @ "..x..","..y.." radius: "..b_radius..radiusText.." angle: "..math.deg(angle).." scale: "..x_scale..", "..y_scale)
-		else
-			debug("Resource size "..b_radius.." to low - spawn skipped")
 		end
 	end
 	
@@ -362,7 +435,16 @@ local function spawn_resource_ore(surface, rname, pos, size, richness, startingA
 			x = rgen:random(-radius, radius)+pos.x
 			y = rgen:random(-radius, radius)+pos.y
 		end
-		b_radius = (radius / 4 + rgen:random() * radius / 4) -- * (N_BALL_SIZE_FACTOR^#n_balls)
+		
+		if p_balls[i] then
+			b_radius = (p_balls[i].radius / 4 + rgen:random() * p_balls[i].radius / 2) -- * (N_BALL_SIZE_FACTOR^#n_balls)
+		else
+			b_radius = (radius / 4 + rgen:random() * radius / 2) -- * (N_BALL_SIZE_FACTOR^#n_balls)
+		end
+		
+		if b_radius < 1 then
+			b_radius = 1
+		end
 		
 		shape = meta_shapes[rgen:random(1,#meta_shapes)]
 		local radiusText = ""
@@ -399,12 +481,14 @@ local function spawn_resource_ore(surface, rname, pos, size, richness, startingA
 	local min_amount = config[rname].min_amount or min_amount
 	if restrictions == 'xy' then
 		-- we have full 4 chunks
-		radius = math.min(radius*1.5, CHUNK_SIZE/2)
+		radius = radius*1.5
 		richness = richness*2/3
-		min_amount = min_amount / 3
+		--min_amount = min_amount / 3
 		max_p_balls = 3
 	end
-	
+
+	radius = math.min(radius, 2*CHUNK_SIZE)
+
 	local force
 	-- generate blobs
 	for i=1,max_p_balls do
@@ -459,22 +543,39 @@ local function spawn_resource_ore(surface, rname, pos, size, richness, startingA
 	end
 	
 	if #oreLocations > 0 then
-			
-		local minSize = richness * 10
-		local maxSize = richness * 20
+		local rectSize = ((inside.xmax - inside.xmin) + (inside.ymax - inside.ymin)) / 2
+
+		local sizeMultiplier = rectSize ^ 0.6
+		local minSize = richness * 5 * sizeMultiplier
+		local maxSize = richness * 10 * sizeMultiplier
 		local approxDepositSize = rgen:random(minSize, maxSize)
+
+		approxDepositSize = approxDepositSize - #oreLocations * min_amount
+		
+		if approxDepositSize < 0 then
+			approxDepositSize = 100 * #oreLocations
+		end
 
 		local forceFactor = approxDepositSize / forceTotal
 
 		-- don't create very dense resources in starting area - another field will be generated
 		if startingArea and forceFactor > 4000 then
 			forceFactor = rgen:random(3000, 4000)
-		elseif forceFactor > 25000 then -- limit size of one resource pile
-			forceFactor = rgen:random(20000, 25000)
 		end
+--		elseif forceFactor > 25000 then -- limit size of one resource pile
+--			forceFactor = rgen:random(20000, 25000)
+--		end
 
-		debug( "Force total:"..forceTotal.." sizeMin:"..minSize.." sizeMax:"..maxSize.." factor:"..forceFactor.." location#:"..#oreLocations)
-
+		debug( "Force total:"..forceTotal.." sizeMin:"..minSize.." sizeMax:"..maxSize.." factor:"..forceFactor.." location#:"..#oreLocations.." rectSize:"..rectSize.." sizeMultiplier:"..sizeMultiplier)
+		local richnessMultiplier = global_richness_mult
+		
+		if startingArea then
+			richnessMultiplier = starting_richness_mult
+		end
+--		if game.players[1] then
+--			game.players[1].print("Spawning "..rname.." total amount "..(approxDepositSize + #oreLocations * min_amount)*richnessMultiplier)
+--		end
+		
 		for _,location in ipairs(oreLocations) do
 	--		local amount=floor((richness*location.force*(0.8^#p_balls)) + min_amount)
 			local amount=floor(forceFactor*location.force + min_amount)
@@ -482,7 +583,7 @@ local function spawn_resource_ore(surface, rname, pos, size, richness, startingA
 			surface.create_entity{name = rname,
 				position = {location.x,location.y},
 				force = game.forces.neutral,
-				amount = floor(amount*global_richness_mult)}
+				amount = floor(amount*richnessMultiplier)}
 		end
 	end
 	
@@ -513,7 +614,19 @@ local function spawn_resource_liquid(surface, rname, pos, size, richness, starti
 	-- don't reduce amount of liquids - they are already infinite
 	--  size = modify_resource_size(size)
 	
-	richness = richness * size
+	richness = ( 0.75 + rgen:random() / 2 ) * richness * size
+	
+	resourceEntity = game.entity_prototypes[rname]
+	
+	if resourceEntity and resourceEntity.infinite_resource then
+		local avgRichness = richness / size
+		local sizeBefore = size
+		if avgRichness > fluidResourcesFactor * resourceEntity.minimum_resource_amount then
+			size = math.floor (richness / (fluidResourcesFactor * resourceEntity.minimum_resource_amount))
+		end
+		debug("Updated size for "..rname.." from "..sizeBefore.." to "..size.." average "..avgRichness.." compared to "..(fluidResourcesFactor * resourceEntity.minimum_resource_amount))
+	end
+
 	
 	local total_share = 0
 	local avg_share = 1/size
@@ -530,6 +643,13 @@ local function spawn_resource_liquid(surface, rname, pos, size, richness, starti
 			break 
 		end
 		local amount = floor(richness*new_share) + saved
+		
+		local richnessMultiplier = global_richness_mult
+		
+		if startingArea then
+			richnessMultiplier = starting_richness_mult
+		end
+		
 		--if amount >= game.entity_prototypes[rname].minimum then 
 		if amount >= config[rname].minimum_amount then 
 			saved = 0
@@ -543,7 +663,7 @@ local function spawn_resource_liquid(surface, rname, pos, size, richness, starti
 					surface.create_entity{name = rname,
 						position = {x,y},
 						force = game.forces.neutral,
-						amount = floor(amount*global_richness_mult),
+						amount = floor(amount*richnessMultiplier),
 					direction = rgen:random(4)}
 					break
 				elseif not startingArea then -- we don't want to make ultra rich nodes in starting area - failing to make them will add second spawn in different location
@@ -573,8 +693,9 @@ local function spawn_entity(surface, ent, r_config, x, y)
 	local _total = 0
 	local r_distance = distance({x=0,y=0},{x=x/REGION_TILE_SIZE,y=y/REGION_TILE_SIZE})  
 	
+	local distanceMultiplier = math.min(r_distance^r_config.size_per_region_factor, 5)
 	if r_config.size_per_region_factor then
-		size = size*math.min(r_config.size_per_region_factor^r_distance, 5)
+		size = size*distanceMultiplier
 	end
 	
 	size = size * enemy_base_size_multiplier
@@ -582,7 +703,7 @@ local function spawn_entity(surface, ent, r_config, x, y)
 	debug("Entering spawn_entity "..ent.." "..x..","..y.." "..size)
 	
 	for i=1,size do
-		local richness=r_config.richness*(richness_distance_factor^r_distance)
+		local richness=r_config.richness*(r_distance^richness_distance_factor)
 		local max_d = floor(CHUNK_SIZE*1.3)
 		local s_x = x + rgen:random(0, floor(max_d - r_config.clear_range[1])) - max_d/2 + r_config.clear_range[1]
 		local s_y = y + rgen:random(0, floor(max_d - r_config.clear_range[2])) - max_d/2 + r_config.clear_range[2]
@@ -629,7 +750,7 @@ local function spawn_entity(surface, ent, r_config, x, y)
 		if r_config.sub_spawn_probability then
 			local sub_spawn_prob = r_config.sub_spawn_probability*math.min(r_config.sub_spawn_max_distance_factor, r_config.sub_spawn_distance_factor^r_distance)
 			if rgen:random() < sub_spawn_prob then
-				for i=1,rgen:random(r_config.sub_spawn_size.min, r_config.sub_spawn_size.max) do
+				for i=1,(rgen:random(r_config.sub_spawn_size.min, r_config.sub_spawn_size.max)*distanceMultiplier) do
 					local allotment_max = 0
 					-- build table
 					for k,v in pairs(r_config.sub_spawns) do
@@ -669,6 +790,8 @@ end
 
 local function spawn_starting_resources( surface )
 	if global.start_resources_spawned or game.tick > 3600 then return end -- starting resources already there or game was started without mod
+	if surface.map_gen_settings.starting_area == "none" and not ignoreMapGenSettings then return end -- starting area disabled by map gen
+	
 	rgen = rng_for_reg_pos({x=0,y=0})
 	local status = true
 	for index,v in ipairs(configIndexed) do
@@ -707,22 +830,110 @@ local function spawn_starting_resources( surface )
 	--l:dump('logs/start_'..global.seed..'.log')
 end
 
-local function prebuild_config_data()
+local function modifyMinMax(value, mod)
+	value.min = round( value.min * mod )
+	value.max = round( value.max * mod )
+end
+
+local function prebuild_config_data(surface)
 	if index_is_built then return false end
+	
+	local mapGenSettings = nil
+	
+	if not ignoreMapGenSettings then
+		mapGenSettings = surface.map_gen_settings
+	end
+	local autoPlaceSettings = nil
+	if mapGenSettings then
+		autoPlaceSettings = mapGenSettings.autoplace_controls
+	end
 	
 	configIndexed = {}
 	-- build additional indexed array to the associative array
 	for res_name, res_conf in pairs(config) do
 		if res_conf.valid then -- only add valid resources
 			res_conf.name = res_name
-			configIndexed[#configIndexed + 1] = res_conf
-			if res_conf.multi_resource then
-				local new_list = {}
-				for sub_res_name, allotment in pairs(res_conf.multi_resource) do
-					new_list[#new_list+1] = {name = sub_res_name, allotment = allotment}
+			
+			local settingsForResource = nil
+			local isEntity = (res_conf.type == "entity")
+			local addResource = true
+			
+			if autoPlaceSettings then
+				settingsForResource = autoPlaceSettings[res_name]
+			end
+			
+			if settingsForResource then
+				local allotmentMod = nil
+				local sizeMod = nil
+				if isEntity then
+					allotmentMod = entityFrequencyMultiplier[settingsForResource.frequency]
+					sizeMod = entitySizeMultiplier[settingsForResource.size]
+				else
+					allotmentMod =frequencyAllotmentMultiplier[settingsForResource.frequency]
+					sizeMod = sizeMultiplier[settingsForResource.size]
 				end
-				table.sort(new_list, function(a, b) return a.name < b.name end)
-				res_conf.multi_resource = new_list
+				local richnessMod = richnessMultiplier[settingsForResource.richness]
+				
+				-- special case to  modify global chance of enemy base spawns
+--				if res_name == "enemy-base" and allotmentMod then
+--					absolute_enemy_chance = absolute_enemy_chance * allotmentMod
+--					debug("Enemy base chance modified to "..absolute_enemy_chance)
+--				end
+				
+				debug(res_name .. " allotment mod " .. allotmentMod .. " size mod " .. sizeMod .. " richness mod " .. richnessMod )
+
+				
+				if allotmentMod then
+					if isEntity then
+						res_conf.absolute_probability = res_conf.absolute_probability * allotmentMod
+						debug("Entity chance modified to "..res_conf.absolute_probability)
+					else
+						res_conf.allotment = round( res_conf.allotment * allotmentMod )
+					end
+				end
+
+				if sizeMod ~= nil and sizeMod == 0 then
+					addResource = false
+				end
+
+				if sizeMod then
+					modifyMinMax(res_conf.size, sizeMod)
+					
+					if res_conf.starting then
+						res_conf.starting.size = round( res_conf.starting.size * sizeMod )
+					end
+					
+					if isEntity then 
+						if res_conf.sub_spawn_size then
+							modifyMinMax(res_conf.sub_spawn_size, sizeMod)
+						end
+						modifyMinMax(res_conf.spawns_per_region, sizeMod)
+					end
+				end
+				
+				if richnessMod then
+					if type == "resource-ore" then
+						res_conf.richness = round( res_conf.richness * richnessMod )
+					elseif type == "resource-liquid" then
+						modifyMinMax(res_conf.richness, richnessMod)
+					end
+					
+					if res_conf.starting then
+						res_conf.starting.richness = round( res_conf.starting.richness * richnessMod )
+					end
+				end
+			end
+			
+			if addResource then
+				configIndexed[#configIndexed + 1] = res_conf
+				if res_conf.multi_resource then
+					local new_list = {}
+					for sub_res_name, allotment in pairs(res_conf.multi_resource) do
+						new_list[#new_list+1] = {name = sub_res_name, allotment = allotment}
+					end
+					table.sort(new_list, function(a, b) return a.name < b.name end)
+					res_conf.multi_resource = new_list
+				end
 			end
 		end
 	end
@@ -738,6 +949,14 @@ local function prebuild_config_data()
 		if v.allotment and v.allotment > 0 then
 			v.allotment_range={min=max_allotment, max=max_allotment+v.allotment}
 			max_allotment=max_allotment+v.allotment
+		end
+	end
+	
+	if mapGenSettings and mapGenSettings.starting_area then
+		local multiplier = startingAreaMultiplier[mapGenSettings.starting_area]
+		if multiplier ~= nil then
+			starting_area_size = starting_area_size * multiplier
+			debug("Starting area "..starting_area_size)
 		end
 	end
 	
@@ -773,7 +992,7 @@ local function checkConfigForInvalidResources()
 	if index_is_built then return end
 	
 	for resourceName, resourceConfig in pairs(config) do
-		if game.entity_prototypes[resourceName] then
+		if game.entity_prototypes[resourceName] or resourceConfig.type == "entity" then
 			resourceConfig.valid = true
 		else
 			-- resource was in config, but it doesn't exist in game files anymore - mark it invalid
@@ -789,32 +1008,6 @@ local function checkForBobEnemies()
 	if game.entity_prototypes["bob-biter-spawner"] and game.entity_prototypes["bob-spitter-spawner"] then
 		useBobEntity = true
 	end
-end
-
-local function init()
-	if not initDone then
-		
-		local surface = game.surfaces['nauvis']
-		
-		if not global.regions then
-			global.regions = {}
-		end
-		
-		if not config then
-			config = loadResourceConfig()
-			checkConfigForInvalidResources()
-			prebuild_config_data()
-		end
-		
-		generate_seed(surface)
-		calculate_spawner_ratio()
-		spawn_starting_resources(surface)
-		
-		checkForBobEnemies()
-		
-		initDone = true
-	end
-	
 end
 
 local function roll_region(surface, c_x, c_y)
@@ -858,7 +1051,7 @@ local function roll_region(surface, c_x, c_y)
 							if not r_data[c_x] then r_data[c_x] = {} end
 							if not r_data[c_x][c_y] then r_data[c_x][c_y] = {} end
 							local c_data = r_data[c_x][c_y]
-							c_data[#c_data+1]={v.name, 0}
+							c_data[#c_data+1]={v.name, rollNumber}
 							last_spawn_coords[#last_spawn_coords+1] = {c_x, c_y}
 							debug("Rolled primary chunk "..v.name.." @ "..c_x.."."..c_y.." reg: "..r_x..","..r_y)
 							-- Along resource spawn, only once
@@ -959,19 +1152,19 @@ local function roll_chunk(surface, c_x, c_y)
 			local resource = res_con[1]
 			local deep = res_con[2]
 			local r_config = config[resource]
-			if r_config then
+			if r_config and r_config.valid then
 				local dist = distance({x=0,y=0},{x=r_x,y=r_y})
 				if r_config.type=="resource-ore" then
-					local size=rgen:random(r_config.size.min, r_config.size.max) * (multi_resource_size_factor^deep) * (size_distance_factor^dist)
-					local richness = r_config.richness*(richness_distance_factor^dist) * (multi_resource_richness_factor^deep)
+					local size=rgen:random(r_config.size.min, r_config.size.max) * (multi_resource_size_factor^deep) * (dist^size_distance_factor)
+					local richness = r_config.richness*(dist^richness_distance_factor) * (multi_resource_richness_factor^deep)
 					local restriction = ''
 					debug("Center @ "..c_center_x..","..c_center_y)
 					c_center_x, c_center_y, restriction = find_intersection(surface, c_center_x, c_center_y)
 					debug("New Center @ "..c_center_x..","..c_center_y)
 					spawn_resource_ore(surface, resource, {x=c_center_x,y=c_center_y}, size, richness, false, restriction)
 				elseif r_config.type=="resource-liquid" then
-					local size=rgen:random(r_config.size.min, r_config.size.max)  * (multi_resource_size_factor^deep) * (size_distance_factor^dist)
-					local richness=rgen:random(r_config.richness.min * size, r_config.richness.max * size) * (richness_distance_factor^dist) * (multi_resource_richness_factor^deep)
+					local size=rgen:random(r_config.size.min, r_config.size.max)  * (multi_resource_size_factor^deep) * (dist^size_distance_factor)
+					local richness=rgen:random(r_config.richness.min, r_config.richness.max) * (dist^richness_distance_factor) * (multi_resource_richness_factor^deep)
 					local restriction = ''
 					c_center_x, c_center_y, restriction = find_intersection(surface, c_center_x, c_center_y)
 					spawn_resource_liquid(surface, resource, {x=c_center_x,y=c_center_y}, size, richness, false, restriction)
@@ -998,6 +1191,14 @@ local function clear_chunk(surface, c_x, c_y)
 				ent_list[ent] = 1
 			end
 		end
+	end
+	
+	ent_list["biter-spawner"] = 1
+	ent_list["spitter-spawner"] = 1
+	
+	if useBobEntity then
+		ent_list["bob-biter-spawner"] = 1
+		ent_list["bob-spitter-spawner"] = 1
 	end
 	
 	for ent, _ in pairs(ent_list) do
@@ -1089,12 +1290,12 @@ local function regenerate_everything(surface)
 		i = i + 1
 	end
 	
-	-- step 2: regenerate chunks again
+	-- step 2: regenerate chunks again - disabled since normal generation is not used anymore
 	i = 1
-	for k, v in pairs(config) do
+--	for k, v in pairs(config) do
 		-- regenerate small patches
-		surface.regenerate_entity(k)
-	end
+--		game.regenerate_entity(k)
+--	end
 	-- regenerate RSO chunks
 	status = true
 	while status do
@@ -1124,7 +1325,7 @@ local function regenerate_everything(surface)
 		i = i + 1
 	end
 	--l:dump("logs/"..global.seed..'regenerated.log')
-	game.player.print('Done')
+	game.players[1].print('Done')
 end
 
 local function extendRect(leftTop, bottomRight)
@@ -1201,6 +1402,32 @@ local function printInvalidResources(player)
 	end
 end
 
+local function init()
+	if not initDone then
+		
+		local surface = game.surfaces['nauvis']
+		
+		if not global.regions then
+			global.regions = {}
+		end
+		
+		if not config then
+			config = loadResourceConfig()
+			checkConfigForInvalidResources()
+			prebuild_config_data(surface)
+		end
+		
+		generate_seed(surface)
+		calculate_spawner_ratio()
+		spawn_starting_resources(surface)
+		
+		checkForBobEnemies()
+		
+		initDone = true
+	end
+	
+end
+
 game.on_init(init)
 game.on_load(init)
 game.on_save(function ()
@@ -1252,7 +1479,8 @@ remote.add_interface("RSO", {
 	-- remote.call("RSO", "regenerate", true/false)
 	regenerate = function(new_seed)
 		if new_seed then global.seed = math.random(0x80000000) end
-		regenerate_everything()
+		local surface = game.surfaces['nauvis']
+		regenerate_everything(surface)
 	end
 })
 

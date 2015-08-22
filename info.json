@@ -1,10 +1,10 @@
 {
   "name": "rso-mod",
-  "version": "1.2.0",
+  "version": "1.3.4",
   "title": "Resource Spawner Overhaul",
   "author": "Dark, orzelek",
   "homepage": "http://www.factorioforums.com/forum/viewtopic.php?f=14&t=4761",
   "contact": "Message me @ http://www.factorioforums.com/forum/viewtopic.php?f=14&t=4761",
   "description": "Overhauls resource spawning system.",
-  "dependencies": ["base >= 0.11.1", "? MAIN-DyTech-Machine", "? CORE-DyTech-Core"]
+  "dependencies": ["base >= 0.12.0", "? MAIN-DyTech-Machine", "? CORE-DyTech-Core", "? bobenemies"]
 }

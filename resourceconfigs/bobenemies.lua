@@ -1,4 +1,4 @@
-function fillEnemies()
+function fillBobEnemies()
 	
 	config["enemy-base"] = {
 		type="entity",
@@ -38,7 +38,25 @@ function fillEnemies()
 				allotment=100,
 				allotment_distance_factor=1.15,
 				clear_range = {2, 2},
-			}
+			},
+			["bob-big-explosive-worm-turret"]={
+				min_distance=6,
+				allotment=100,
+				allotment_distance_factor=1.15,
+				clear_range = {2, 2},
+			},			
+			["bob-big-fire-worm-turret"]={
+				min_distance=6,
+				allotment=100,
+				allotment_distance_factor=1.15,
+				clear_range = {2, 2},
+			},			
+			["bob-big-poison-worm-turret"]={
+				min_distance=6,
+				allotment=100,
+				allotment_distance_factor=1.15,
+				clear_range = {2, 2},
+			},			
 		}
 	}
 	

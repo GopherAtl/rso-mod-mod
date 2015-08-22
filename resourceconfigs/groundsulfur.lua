@@ -3,9 +3,9 @@ function fillGroundSulfurConfig()
 	config["sulfur"] = {
 		type = "resource-ore",
 		allotment = 40,
-		spawns_per_region = {min=1, max=2},
-		richness = 1000,
-		size = {min=10, max=14},
+		spawns_per_region = {min=1, max=1},
+		richness = 3000,
+		size = {min=15, max=20},
 	}
 	
 	if config["iron-ore"] and config["iron-ore"].multi_resource then

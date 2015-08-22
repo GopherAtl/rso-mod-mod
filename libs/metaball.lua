@@ -86,7 +86,7 @@ function MetaDonut:new(x, y, out_r, int_r, angle, x_scale, y_scale, goo)
   goo = goo or 1
   cosa = cos(angle)
   sina = sin(angle)
-  if int_r >= out_r then error("int_r >= out_r"); return; end
+  if int_r >= out_r then error("int_r >= out_r ("..int_r.." > "..out_r); return; end
   local radius = out_r--(out_r - int_r)*0.5
   local radius2 = int_r--(radius2 + radius)*0.5
   return setmetatable({x=x, y=y, radius=radius, radius2=radius2, x_scale=x_scale, y_scale=y_scale, goo=goo, cosa=cosa, sina=sina}, MetaDonut)

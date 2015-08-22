@@ -4,12 +4,12 @@ function fillUraniumpowerConfig()
 		type="resource-ore",
 		
 		allotment=30,
-		spawns_per_region={min=1, max=3},
-		richness=6000,
-		size={min=10, max=15},
+		spawns_per_region={min=1, max=1},
+		richness=8000,
+		size={min=14, max=20},
 		min_amount = 150,
 		
-		multi_resource_chance=0.50,
+		multi_resource_chance=0.30,
 		multi_resource={
 			["copper-ore"] = 2,
 			["iron-ore"] = 2,
@@ -23,12 +23,12 @@ function fillUraniumpowerConfig()
 		type="resource-ore",
 		
 		allotment=30,
-		spawns_per_region={min=1, max=3},
-		richness=8000,
-		size={min=10, max=15},
+		spawns_per_region={min=1, max=1},
+		richness=10000,
+		size={min=14, max=20},
 		min_amount = 150,
 		
-		multi_resource_chance=0.50,
+		multi_resource_chance=0.30,
 		multi_resource={
 			["copper-ore"] = 2,
 			["iron-ore"] = 2,

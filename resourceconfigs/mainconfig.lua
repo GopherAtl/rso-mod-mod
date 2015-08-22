@@ -3,14 +3,17 @@ require("resourceconfigs.vanilla_enemies")
 require("resourceconfigs.roadworks")
 require("resourceconfigs.dytech")
 require("resourceconfigs.bobores")
+require("resourceconfigs.bobenemies")
 require("resourceconfigs.peacemod")
 require("resourceconfigs.yuoki_industries")
 require("resourceconfigs.mopower")
 require("resourceconfigs.replicators")
 require("resourceconfigs.uraniumpower")
+require("resourceconfigs.homeworld")
 require("resourceconfigs.groundsulfur")
 require("resourceconfigs.evolution")
 require("resourceconfigs.replicators")
+require("resourceconfigs.darkmatter")
 
 
 function loadResourceConfig()
@@ -21,7 +24,11 @@ function loadResourceConfig()
 	
 	--[[ MODS SUPPORT ]]--
 	if not game.entity_prototypes["alien-ore"] or useEnemiesInPeaceMod then  -- if the user has peacemod installed he probably doesn't want that RSO spawns them either. remote.interfaces["peacemod"]
-		fillEnemies()
+		if game.entity_prototypes["bob-big-explosive-worm-turret"] and game.entity_prototypes["bob-big-fire-worm-turret"] and game.entity_prototypes["bob-big-poison-worm-turret"] then
+			fillBobEnemies()
+		else
+			fillEnemies()
+		end
 	end
 	
 	-- Roadworks mod
@@ -76,6 +83,16 @@ function loadResourceConfig()
 	-- replicators
 	if game.entity_prototypes["creatine"] then
 		fillReplicatorsConfig()
+	end
+	
+	-- homeworld
+	if game.entity_prototypes["sand"] then
+		fillHomeworldConfig()
+	end
+	
+	-- dark matter replicators
+	if game.entity_prototypes["tenemut"] then
+		fillDarkMatterConfig()
 	end
 
 	return config

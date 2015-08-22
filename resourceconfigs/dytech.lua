@@ -4,8 +4,8 @@ function fillDytechConfig()
 	-- so it is safe to use remote.interfaces (some resources are shared with bobs ores - so it's unsafe to check for those -> better use remote.interfaces)
 	if remote.interfaces["DyTech-Core"] then
 		config["stone"].allotment = 80
-		config["stone"].richness = 25000
-		config["stone"].starting.richness = 10000
+		config["stone"].richness = 20000
+		config["stone"].starting.richness = 8000
 	end
 	
 	if remote.interfaces["DyTech-Core"] then
@@ -14,12 +14,12 @@ function fillDytechConfig()
 			type="resource-ore",
 			
 			allotment=40,
-			spawns_per_region={min=1, max=3},
+			spawns_per_region={min=1, max=1},
 			richness=10000,
-			size={min=10, max=18},
+			size={min=15, max=20},
 			min_amount = 150,
 			
-			multi_resource_chance=0.50,
+			multi_resource_chance=0.30,
 			multi_resource={
 				["lead-ore"] = 3,
 				["silver-ore"] = 3,
@@ -33,12 +33,12 @@ function fillDytechConfig()
 			type="resource-ore",
 			
 			allotment=40,
-			spawns_per_region={min=1, max=3},
+			spawns_per_region={min=1, max=1},
 			richness=10000,
-			size={min=10, max=18},
+			size={min=10, max=20},
 			min_amount = 150,
 			
-			multi_resource_chance=0.50,
+			multi_resource_chance=0.30,
 			multi_resource={
 				["lead-ore"] = 3,
 				["gold-ore"] = 3,
@@ -53,14 +53,14 @@ function fillDytechConfig()
 			type="resource-ore",
 			
 			allotment=40,
-			spawns_per_region={min=1, max=3},
+			spawns_per_region={min=1, max=1},
 			richness=10000,
-			size={min=10, max=18},
+			size={min=10, max=20},
 			min_amount = 300,
 			
-			starting={richness=3000, size=10, probability=1},
+			starting={richness=3000, size=15, probability=1},
 			
-			multi_resource_chance=0.50,
+			multi_resource_chance=0.30,
 			multi_resource={
 				["silver-ore"] = 3,
 				["gold-ore"] = 3,
@@ -75,14 +75,14 @@ function fillDytechConfig()
 			type="resource-ore",
 			
 			allotment=40,
-			spawns_per_region={min=1, max=3},
-			richness=10000,
-			size={min=10, max=18},
+			spawns_per_region={min=1, max=1},
+			richness=12000,
+			size={min=15, max=25},
 			min_amount = 300,
 			
-			starting={richness=3000, size=10, probability=1},
+			starting={richness=4000, size=15, probability=1},
 			
-			multi_resource_chance=0.50,
+			multi_resource_chance=0.30,
 			multi_resource={
 				["lead-ore"] = 3,
 				["silver-ore"] = 3,
@@ -97,12 +97,12 @@ function fillDytechConfig()
 			type="resource-ore",
 			
 			allotment=30,
-			spawns_per_region={min=1, max=3},
+			spawns_per_region={min=1, max=1},
 			richness=8000,
-			size={min=10, max=18},
+			size={min=10, max=20},
 			min_amount = 200,
 			
-			multi_resource_chance=0.50,
+			multi_resource_chance=0.30,
 			multi_resource={
 				["lead-ore"] = 3,
 				["silver-ore"] = 3,
@@ -117,12 +117,14 @@ function fillDytechConfig()
 			type="resource-ore",
 			
 			allotment=40,
-			spawns_per_region={min=1, max=3},
-			richness=8000,
-			size={min=12, max=18},
+			spawns_per_region={min=1, max=1},
+			richness=6000,
+			size={min=10, max=20},
 			min_amount = 250,
-			
-			multi_resource_chance=0.50,
+
+			starting={richness=1000, size=10, probability=1},
+
+			multi_resource_chance=0.30,
 			multi_resource={
 				["lead-ore"] = 3,
 				["silver-ore"] = 3,
@@ -137,12 +139,12 @@ function fillDytechConfig()
 			type="resource-ore",
 			
 			allotment=30,
-			spawns_per_region={min=1, max=3},
+			spawns_per_region={min=1, max=1},
 			richness=4000,
-			size={min=10, max=14},
+			size={min=15, max=20},
 			min_amount = 30,
 			
-			multi_resource_chance=0.50,
+			multi_resource_chance=0.30,
 			multi_resource={
 				["stone"] = 1,
 				["lead-ore"] = 3,
@@ -158,12 +160,12 @@ function fillDytechConfig()
 			type="resource-ore",
 			
 			allotment=30,
-			spawns_per_region={min=1, max=3},
+			spawns_per_region={min=1, max=1},
 			richness=6000,
-			size={min=10, max=14},
+			size={min=10, max=15},
 			min_amount = 100,
 			
-			multi_resource_chance=0.50,
+			multi_resource_chance=0.30,
 			multi_resource={
 				["lead-ore"] = 3,
 				["silver-ore"] = 3,
@@ -178,13 +180,13 @@ function fillDytechConfig()
 			type="resource-ore",
 			
 			allotment=30,
-			spawns_per_region={min=1, max=3},
+			spawns_per_region={min=1, max=1},
 			richness=8000,
-			size={min=10, max=14},
+			size={min=10, max=15},
 			min_amount = 150,
 			
 			
-			multi_resource_chance=0.50,
+			multi_resource_chance=0.30,
 			multi_resource={
 				["lead-ore"] = 3,
 				["silver-ore"] = 3,
@@ -203,7 +205,7 @@ function fillDytechConfig()
 			minimum_amount=125000,
 			
 			allotment=25,
-			spawns_per_region={min=1, max=2},
+			spawns_per_region={min=1, max=1},
 			richness={min=150000, max=400000},
 			size={min=2, max=3},
 			
@@ -222,7 +224,7 @@ function fillDytechConfig()
 			minimum_amount=125000,
 			
 			allotment=25,
-			spawns_per_region={min=1, max=2},
+			spawns_per_region={min=1, max=1},
 			richness={min=150000, max=400000},
 			size={min=2, max=3},
 			
@@ -241,7 +243,7 @@ function fillDytechConfig()
 			minimum_amount=125000,
 			
 			allotment=25,
-			spawns_per_region={min=1, max=2},
+			spawns_per_region={min=1, max=1},
 			richness={min=150000, max=400000}, -- total richness of site
 			size={min=2, max=3}, -- richness divided by this number
 			
