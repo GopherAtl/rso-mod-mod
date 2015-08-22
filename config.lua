@@ -3,6 +3,9 @@ require 'defines'
 debug_enabled = false
 debug_items_enabled = false
 
+starting_area_forces={"red","blue","green","yellow"} --default, regular player force gets a starting area
+
+
 region_size = 7	-- alternative mean to control how further away resources would be, default - 256 tiles or 8 chunks
 				-- each region is region_size*region_size chunks
 				-- each chunk is 32*32 tiles
